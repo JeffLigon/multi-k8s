@@ -1,0 +1,25 @@
+# CHECK THIS LATER  changed --coverage to -e CI=true -- --watchAll=false
+#  as suggested in Q&A, so that 'npm run test' ends with exit code 0
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t jeffligon/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run jeffligon/react-test npm test -- --coverage
+#  - docker run -e CI=true jeffligon/docker-react npm run test -- --watchAll=false
+
+after_success:
+  - docker build -t jeffligon/multi-client ./client
+  - docker build -t jeffligon/multi-nginx ./nginx
+  - docker build -t jeffligon/multi-server ./server
+  - docker build -t jeffligon/multi-worker ./worker
+  # Login to Docker Hub
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Push images up to Docker Hub
+  - docker push jeffligon/multi-client
+  - docker push jeffligon/multi-nginx
+  - docker push jeffligon/multi-server
+  - docker push jeffligon/multi-worker

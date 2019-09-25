@@ -32,7 +32,7 @@ before_install:
   - docker build -t jeffligon/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run -e CI=true jeffligon/docker-react npm run test
+  - docker run -e CI=true jeffligon/react-test npm run test
 
 deploy:
   provider: script

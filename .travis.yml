@@ -1,0 +1,41 @@
+# In the upcoming lecture we will be adding a script to our .travis.yml file. 
+# Similar to our previous projects that ran tests using Travis, we need to 
+# make sure the tests exit after running and don't cause our builds to fail.  
+#
+# Make sure to change this script:
+#
+#    script:
+#      - docker run USERNAME/docker-react npm run test -- --coverage
+#
+# To use the CI flag and remove coverage:
+#
+#    script:
+#      - docker run -e CI=true USERNAME/docker-react npm run test
+#
+sudo: required
+services:
+  - docker
+env:
+  global:
+    - SHA=$(git rev-parse HEAD)
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+before_install: 
+  - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in GoogleCloudAuth-multi-k8s-253822-a9fc7ca59ebd.json.enc -out GoogleCloudAuth-multi-k8s-253822-a9fc7ca59ebd.json -d
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud componenets update kubectl
+  - gcloud auth activate-service-account --key-file GoogleCloudAuth-multi-k8s-253822-a9fc7ca59ebd.json
+  - gcloud config set project multi-k8s-253822
+  - gcloud config set compute/zone us-central1-a
+  - gcloud container clusters get-credentials multi-k8s-cluster-1 
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker build -t jeffligon/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true jeffligon/docker-react npm run test
+
+deploy:
+  provider: script
+  script: bash ./deploy.sh
+  on:
+    branch: master

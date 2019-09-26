@@ -1,0 +1,21 @@
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: multi-k8s-ngconnect-org-tls
+spec:
+  secretName: multi-k8s-ngconnect-org
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: multi-k8s.ngconnect.org
+  dnsNames:
+    - multi-k8s.ngconnect.org
+  acme:
+    config:
+      - http01:
+          ingressClass: nginx
+        domains:
+          - multi-k8s.ngconnect.org
+
+    
+    
